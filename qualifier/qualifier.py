@@ -1,5 +1,6 @@
 from enum import auto, StrEnum
 
+
 MAX_QUOTE_LENGTH = 50
 
 
@@ -21,8 +22,7 @@ class Quote:
         self.quote = ...
         self.mode = ...
 
-    def __str__(self) -> str:
-        ...
+    def __str__(self) -> str: ...
 
     def _create_variant(self) -> str:
         """
