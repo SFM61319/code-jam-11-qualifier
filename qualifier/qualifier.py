@@ -59,7 +59,7 @@ class Quote:
                 return uwuify(self.quote)
 
             case VariantMode.PIGLATIN:
-                raise NotImplementedError("Pig Latin variant not implemented")
+                return piglatinify(self.quote)
 
 
 def run_command(command: str) -> None:
@@ -84,7 +84,9 @@ def run_command(command: str) -> None:
 
         case command if command.startswith("quote piglatin"):
             raw_quote = command[16:-1]
-            raise NotImplementedError("Command not implemented")
+            piglatinified_quote = piglatinify(raw_quote)
+
+            add_quote(piglatinified_quote, VariantMode.PIGLATIN)
 
         case command if command.startswith("quote list"):
             formatted_quotes = list_formatted_quotes()
@@ -164,6 +166,45 @@ def uwuify(quote: str) -> str:
         warnings.warn("Quote too long, only partially transformed")
 
     if transformed_quote == quote:
+        raise ValueError("Quote was not modified")
+
+    return transformed_quote
+
+
+def piglatinify(quote: str) -> str:
+    """
+    PigLatinifies the given quote.
+
+    Args:
+        quote (str): The quote to piglatinify.
+
+    Returns:
+        str: The piglatinified quote.
+    """
+
+    VOWELS = ("a", "e", "i", "o", "u")
+
+    if len(quote) > MAX_QUOTE_LENGTH:
+        raise ValueError("Quote is too long")
+
+    quote_words = quote.split(" ")
+    transformed_quote_words: list[str] = []
+
+    for word in quote_words:
+        if word.lower().startswith(VOWELS):
+            transformed_quote_words.append(f"{word}way")
+            continue
+
+        cluster_len = 0
+        while cluster_len < len(word) and word[cluster_len].lower() not in VOWELS:
+            cluster_len += 1
+
+        transformed_quote_words.append(f"{word[cluster_len:]}{word[:cluster_len]}ay")
+
+    transformed_quote = " ".join(transformed_quote_words)
+    transformed_quote = transformed_quote[0].upper() + transformed_quote[1:].lower()
+
+    if len(transformed_quote) > MAX_QUOTE_LENGTH:
         raise ValueError("Quote was not modified")
 
     return transformed_quote
