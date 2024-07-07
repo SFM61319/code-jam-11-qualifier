@@ -1,4 +1,5 @@
 from enum import auto, StrEnum
+import warnings
 
 
 MAX_QUOTE_LENGTH = 50
@@ -50,6 +51,16 @@ class Quote:
         `self.mode` and returns the result.
         """
 
+        match self.mode:
+            case VariantMode.NORMAL:
+                return self.quote
+
+            case VariantMode.UWU:
+                return uwuify(self.quote)
+
+            case VariantMode.PIGLATIN:
+                raise NotImplementedError("Pig Latin variant not implemented")
+
 
 def run_command(command: str) -> None:
     """
@@ -67,7 +78,9 @@ def run_command(command: str) -> None:
     match command:
         case command if command.startswith("quote uwu"):
             raw_quote = command[11:-1]
-            raise NotImplementedError("Command not implemented")
+            uwuified_quote = uwuify(raw_quote)
+
+            add_quote(uwuified_quote, VariantMode.UWU)
 
         case command if command.startswith("quote piglatin"):
             raw_quote = command[16:-1]
@@ -82,10 +95,7 @@ def run_command(command: str) -> None:
             or (command.startswith("quote “") and command.endswith("”"))
         ):
             raw_quote = command[7:-1]
-            try:
-                add_quote(raw_quote, VariantMode.NORMAL)
-            except DuplicateError:
-                print("Quote has already been added previously")
+            add_quote(raw_quote, VariantMode.NORMAL)
 
         case _:
             raise ValueError("Invalid command")
@@ -119,7 +129,44 @@ def add_quote(quote: str, mode: VariantMode) -> None:
     if len(quote) > MAX_QUOTE_LENGTH:
         raise ValueError("Quote is too long")
 
-    Database.add_quote(Quote(quote, mode))
+    try:
+        Database.add_quote(Quote(quote, mode))
+    except DuplicateError:
+        print("Quote has already been added previously")
+
+
+def uwuify(quote: str) -> str:
+    """
+    UwUifies the given quote.
+
+    Args:
+        quote (str): The quote to uwuify.
+
+    Returns:
+        str: The uwuified quote.
+    """
+
+    partially_transformed_quote = (
+        quote.replace("L", "W").replace("l", "w").replace("R", "W").replace("r", "w")
+    )
+    fully_transformed_quote = " ".join(
+        (
+            f"U-{word}"
+            if word.startswith("U")
+            else f"u-{word}" if word.startswith("u") else word
+        )
+        for word in partially_transformed_quote.split(" ")
+    )
+
+    transformed_quote = fully_transformed_quote
+    if len(fully_transformed_quote) > MAX_QUOTE_LENGTH:
+        transformed_quote = partially_transformed_quote
+        warnings.warn("Quote too long, only partially transformed")
+
+    if transformed_quote == quote:
+        raise ValueError("Quote was not modified")
+
+    return transformed_quote
 
 
 class Database:
