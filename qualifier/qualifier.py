@@ -41,7 +41,8 @@ class Quote:
         self.quote = quote
         self.mode = mode
 
-    def __str__(self) -> str: ...
+    def __str__(self) -> str:
+        return self.quote
 
     def _create_variant(self) -> str:
         """
@@ -76,9 +77,18 @@ def run_command(command: str) -> None:
             formatted_quotes = list_formatted_quotes()
             print(formatted_quotes)
 
-        case command if command.startswith("quote"):
+        case command if (
+            (command.startswith('quote "') and command.endswith('"'))
+            or (command.startswith("quote “") and command.endswith("”"))
+        ):
             raw_quote = command[7:-1]
-            raise NotImplementedError("Command not implemented")
+            try:
+                add_quote(raw_quote, VariantMode.NORMAL)
+            except DuplicateError:
+                print("Quote has already been added previously")
+
+        case _:
+            raise ValueError("Invalid command")
 
 
 def list_formatted_quotes() -> str:
@@ -92,6 +102,24 @@ def list_formatted_quotes() -> str:
     """
 
     return "\n".join(f"- {quote}" for quote in Database.get_quotes())
+
+
+def add_quote(quote: str, mode: VariantMode) -> None:
+    """
+    Adds a new quote to the database.
+
+    Args:
+        quote (str): The new quote to add.
+        mode (VariantMode): The `VariantMode` to apply to the new quote.
+
+    Raises:
+        - `ValueError` if the quote is longer than 50 characters.
+    """
+
+    if len(quote) > MAX_QUOTE_LENGTH:
+        raise ValueError("Quote is too long")
+
+    Database.add_quote(Quote(quote, mode))
 
 
 class Database:
