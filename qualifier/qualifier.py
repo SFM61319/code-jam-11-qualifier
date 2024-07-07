@@ -63,6 +63,36 @@ def run_command(command: str) -> None:
            quotes to be displayed in discord flavored markdown
     """
 
+    match command:
+        case command if command.startswith("quote uwu"):
+            raw_quote = command[11:-1]
+            raise NotImplementedError("Command not implemented")
+
+        case command if command.startswith("quote piglatin"):
+            raw_quote = command[16:-1]
+            raise NotImplementedError("Command not implemented")
+
+        case command if command.startswith("quote list"):
+            formatted_quotes = list_formatted_quotes()
+            print(formatted_quotes)
+
+        case command if command.startswith("quote"):
+            raw_quote = command[7:-1]
+            raise NotImplementedError("Command not implemented")
+
+
+def list_formatted_quotes() -> str:
+    """
+    Returns a formatted string that lists all the current quotes in the database.
+
+    The quotes are formatted with a bullet point (`-`) prefix, one quote per line.
+
+    Returns:
+        str: The formatted string.
+    """
+
+    return "\n".join(f"- {quote}" for quote in Database.get_quotes())
+
 
 class Database:
     """
